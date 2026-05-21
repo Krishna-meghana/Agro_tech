@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroGuard - Smart Advisory</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- Login Page -->
+    <div id="login-page" class="page active">
+        <div class="login-wrapper">
+            <div class="glass-card login-card">
+                <div class="logo-container">
+                    <i data-lucide="leaf" class="logo-icon"></i>
+                    <h1>AgroGuard</h1>
+                </div>
+                <p class="subtitle" data-i18n="login_subtitle">Smart farming powered by AI</p>
+                
+                <form id="login-form">
+                    <div class="input-group">
+                        <i data-lucide="user"></i>
+                        <input type="text" id="username" placeholder="Username" required data-i18n-placeholder="username">
+                    </div>
+                    <div class="input-group">
+                        <i data-lucide="lock"></i>
+                        <input type="password" id="password" placeholder="Password" required data-i18n-placeholder="password">
+                    </div>
+                    <button type="submit" class="btn-primary" data-i18n="login_btn">Sign In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Layout -->
+    <div id="app-layout" class="page">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar glass-card">
+            <div class="logo-container sm">
+                <i data-lucide="leaf" class="logo-icon"></i>
+                <h2>AgroGuard</h2>
+            </div>
+
+            <ul class="nav-links">
+                <li data-page="dashboard" class="active">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span data-i18n="nav_dashboard">Dashboard</span>
+                </li>
+                <li data-page="advisory">
+                    <i data-lucide="stethoscope"></i>
+                    <span data-i18n="nav_advisory">Crop Advisory</span>
+                </li>
+                <li data-page="history">
+                    <i data-lucide="history"></i>
+                    <span data-i18n="nav_history">History</span>
+                </li>
+                <li data-page="settings">
+                    <i data-lucide="settings"></i>
+                    <span data-i18n="nav_settings">Settings</span>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="language-selector">
+                    <i data-lucide="globe"></i>
+                    <select id="lang-select">
+                        <option value="en">English</option>
+                        <option value="hi">हिंदी</option>
+                        <option value="te">తెలుగు</option>
+                    </select>
+                </div>
+                <button id="logout-btn" class="btn-ghost">
+                    <i data-lucide="log-out"></i>
+                    <span data-i18n="logout">Logout</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+            <!-- Dashboard Page -->
+            <div id="page-dashboard" class="content-section active">
+                <header>
+                    <h1 data-i18n="welcome">Welcome back, <span id="user-display-name">Farmer</span>!</h1>
+                    <p data-i18n="dashboard_subtitle">Here is your farm's overview today.</p>
+                </header>
+
+                <div class="dashboard-grid">
+                    <!-- Weather Widget -->
+                    <div class="glass-card weather-card">
+                        <div class="weather-header">
+                            <h3 data-i18n="weather_now">Current Weather</h3>
+                            <i data-lucide="map-pin" class="icon-sm"></i> <span id="location-name">Detecting...</span>
+                        </div>
+                        <div class="weather-main">
+                            <i data-lucide="cloud-sun" class="weather-icon-lg"></i>
+                            <div class="temperature">
+                                <span id="temp-val">28</span>°C
+                            </div>
+                        </div>
+                        <div class="weather-details">
+                            <div><i data-lucide="droplets"></i> <span id="humidity-val">65%</span> Humidity</div>
+                            <div><i data-lucide="wind"></i> <span id="wind-val">12 km/h</span> Wind</div>
+                        </div>
+                        <div class="farming-guidance mt-4">
+                            <h4 data-i18n="guidance">Farming Guidance:</h4>
+                            <p id="weather-guidance" data-i18n="weather_advice_good">Good conditions for spraying fertilizers today.</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="glass-card stats-card">
+                        <h3 data-i18n="recent_activity">Recent Activity</h3>
+                        <div class="stat-item">
+                            <div class="stat-icon warning"><i data-lucide="alert-triangle"></i></div>
+                            <div class="stat-info">
+                                <h4>Tomato Blight Detected</h4>
+                                <span>2 days ago</span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon success"><i data-lucide="check-circle"></i></div>
+                            <div class="stat-info">
+                                <h4>Soil Advisory Completed</h4>
+                                <span>1 week ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advisory Page -->
+            <div id="page-advisory" class="content-section">
+                <header>
+                    <h1 data-i18n="disease_detection">Crop Disease Detection</h1>
+                    <p data-i18n="advisory_subtitle">Upload an image of the affected plant or chat with our AI.</p>
+                </header>
+
+                <div class="advisory-container">
+                    <div class="upload-section glass-card">
+                        <div class="upload-zone" id="drop-zone">
+                            <i data-lucide="upload-cloud" class="upload-icon"></i>
+                            <p data-i18n="drag_drop">Drag and drop an image here</p>
+                            <p class="text-sm">or</p>
+                            <button class="btn-secondary" onclick="document.getElementById('file-upload').click()" data-i18n="browse_files">Browse Files</button>
+                            <input type="file" id="file-upload" hidden accept="image/*">
+                        </div>
+                        <div id="image-preview" class="hidden">
+                            <img id="preview-img" src="" alt="Preview">
+                            <button class="btn-primary mt-2 w-full" id="analyze-btn" data-i18n="analyze_image">Analyze Image</button>
+                        </div>
+                    </div>
+
+                    <div class="chat-section glass-card">
+                        <div class="chat-header">
+                            <i data-lucide="bot"></i>
+                            <h3 data-i18n="ai_advisor">Agro AI Advisor</h3>
+                        </div>
+                        
+                        <div class="chat-messages" id="chat-messages">
+                            <!-- Messages will be injected here -->
+                            <div class="message ai">
+                                <div class="message-content" data-i18n="ai_greeting">Hello! Please upload a clear image of the crop leaf, or describe the symptoms you are seeing.</div>
+                            </div>
+                        </div>
+
+                        <div class="chat-input">
+                            <input type="text" id="chat-input-field" placeholder="Describe symptoms..." data-i18n-placeholder="chat_placeholder">
+                            <button id="send-btn" class="btn-primary icon-btn"><i data-lucide="send"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Page -->
+            <div id="page-history" class="content-section">
+                <header>
+                    <h1 data-i18n="nav_history">History</h1>
+                    <p data-i18n="history_subtitle">Your past analyses and recommendations.</p>
+                </header>
+
+                <div class="glass-card history-card">
+                    <div class="history-list" id="history-list">
+                        <!-- History items will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="page-settings" class="content-section">
+                <header>
+                    <h1 data-i18n="nav_settings">Settings</h1>
+                    <p data-i18n="settings_subtitle">Configure your application preferences.</p>
+                </header>
+
+                <div class="glass-card settings-card" style="padding: 2rem;">
+                    <h3 data-i18n="api_configuration">API Configuration</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;" data-i18n="api_description">API Keys are now securely managed on the backend server via the .env file.</p>
+                    
+                    <h3 style="margin-top: 2rem;">Location Preference</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">Override GPS location to a fixed city (e.g., 'Mumbai', 'London', 'New York').</p>
+                    <div class="input-group" style="max-width: 500px;">
+                        <i data-lucide="map-pin"></i>
+                        <input type="text" id="manual-location" placeholder="Enter custom location (leave blank to use GPS)">
+                    </div>
+
+                    <button class="btn-primary mt-2" id="save-settings-btn" data-i18n="save_settings">Save Settings</button>
+                    <p id="settings-status" style="margin-top: 1rem; font-size: 0.9rem; color: var(--success); display: none;"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
