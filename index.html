@@ -127,22 +127,12 @@
                         </div>
                     </div>
 
-                    <!-- Quick Stats -->
+                    <!-- Forecast Stats -->
                     <div class="glass-card stats-card">
-                        <h3 data-i18n="recent_activity">Recent Activity</h3>
-                        <div class="stat-item">
-                            <div class="stat-icon warning"><i data-lucide="alert-triangle"></i></div>
-                            <div class="stat-info">
-                                <h4>Tomato Blight Detected</h4>
-                                <span>2 days ago</span>
-                            </div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-icon success"><i data-lucide="check-circle"></i></div>
-                            <div class="stat-info">
-                                <h4>Soil Advisory Completed</h4>
-                                <span>1 week ago</span>
-                            </div>
+                        <h3 data-i18n="weather_forecast">3-Day Forecast</h3>
+                        <div id="forecast-container" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                            <!-- Forecast items will be injected here -->
+                            <div style="color: var(--text-muted); font-size: 0.9rem;">Loading forecast...</div>
                         </div>
                     </div>
                 </div>

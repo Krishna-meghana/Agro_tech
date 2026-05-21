@@ -204,22 +204,35 @@ async def get_weather(lat: float = None, lon: float = None, location: str = None
             except Exception:
                 pass
 
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code"
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=4"
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
         
         current = data.get("current", {})
+        daily = data.get("daily", {})
         
-        # Map WMO weather codes to simple text
-        code = current.get("weather_code", 0)
-        if code in [0, 1]: condition = "Clear"
-        elif code in [2, 3, 45, 48]: condition = "Clouds"
-        elif code in [51, 53, 55, 56, 57]: condition = "Drizzle"
-        elif code in [61, 63, 65, 66, 67, 80, 81, 82]: condition = "Rain"
-        elif code in [71, 73, 75, 77, 85, 86]: condition = "Snow"
-        elif code >= 95: condition = "Thunderstorm"
-        else: condition = "Unknown"
+        def get_condition(c):
+            if c in [0, 1]: return "Clear"
+            elif c in [2, 3, 45, 48]: return "Clouds"
+            elif c in [51, 53, 55, 56, 57]: return "Drizzle"
+            elif c in [61, 63, 65, 66, 67, 80, 81, 82]: return "Rain"
+            elif c in [71, 73, 75, 77, 85, 86]: return "Snow"
+            elif c >= 95: return "Thunderstorm"
+            else: return "Unknown"
+
+        condition = get_condition(current.get("weather_code", 0))
+        
+        forecast = []
+        if daily and "time" in daily:
+            # daily returns today as index 0, tomorrow as 1, etc.
+            for i in range(1, len(daily["time"])):
+                forecast.append({
+                    "date": daily["time"][i],
+                    "max_temp": daily["temperature_2m_max"][i],
+                    "min_temp": daily["temperature_2m_min"][i],
+                    "condition": get_condition(daily["weather_code"][i])
+                })
 
         # Format matches OpenWeatherMap to keep frontend unchanged
         return {
@@ -233,7 +246,8 @@ async def get_weather(lat: float = None, lon: float = None, location: str = None
             },
             "weather": [
                 {"main": condition}
-            ]
+            ],
+            "forecast": forecast
         }
     except Exception as e:
         return {"error": f"Failed to fetch weather: {str(e)}"}

@@ -15,6 +15,7 @@ const translations = {
         guidance: "Farming Guidance:",
         weather_advice_good: "Clear skies. Good conditions for spraying fertilizers or pesticides.",
         recent_activity: "Recent Activity",
+        weather_forecast: "3-Day Forecast",
         disease_detection: "Crop Disease Detection",
         advisory_subtitle: "Upload an image of the affected plant or chat with our AI.",
         drag_drop: "Drag and drop an image here",
@@ -50,6 +51,7 @@ const translations = {
         guidance: "कृषि मार्गदर्शन:",
         weather_advice_good: "आसमान साफ है। उर्वरक या कीटनाशक छिड़काव के लिए अच्छी स्थिति है।",
         recent_activity: "हाल की गतिविधि",
+        weather_forecast: "3-दिवसीय पूर्वानुमान",
         disease_detection: "फसल रोग का पता लगाना",
         advisory_subtitle: "प्रभावित पौधे की छवि अपलोड करें या हमारे एआई के साथ चैट करें।",
         drag_drop: "यहां एक छवि खींचें और छोड़ें",
@@ -85,6 +87,7 @@ const translations = {
         guidance: "వ్యవసాయ మార్గదర్శకత్వం:",
         weather_advice_good: "ఆకాశం నిర్మలంగా ఉంది. ఎరువులు లేదా పురుగుమందులు పిచికారీ చేయడానికి మంచి పరిస్థితులు.",
         recent_activity: "ఇటీవలి కార్యాచరణ",
+        weather_forecast: "3-రోజుల సూచన",
         disease_detection: "పంట వ్యాధి గుర్తింపు",
         advisory_subtitle: "ప్రభావిత మొక్క యొక్క చిత్రాన్ని అప్‌లోడ్ చేయండి లేదా మా AIతో చాట్ చేయండి.",
         drag_drop: "ఇక్కడ చిత్రాన్ని లాగి వదలండి",
@@ -326,6 +329,37 @@ function fetchWeather() {
                 guidanceEl.textContent = translations[currentLang].weather_advice_good;
                 guidanceEl.style.borderLeftColor = "var(--accent)";
                 guidanceEl.style.backgroundColor = "rgba(163, 230, 53, 0.1)";
+            }
+            
+            // Render Forecast
+            const forecastContainer = document.getElementById('forecast-container');
+            if (forecastContainer && data.forecast && data.forecast.length > 0) {
+                forecastContainer.innerHTML = data.forecast.slice(0, 3).map(day => {
+                    const dateObj = new Date(day.date);
+                    const dayName = dateObj.toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : (currentLang === 'te' ? 'te-IN' : 'en-US'), { weekday: 'short', month: 'short', day: 'numeric' });
+                    
+                    let icon = 'cloud';
+                    const cond = day.condition.toLowerCase();
+                    if (cond.includes('clear')) icon = 'sun';
+                    else if (cond.includes('rain') || cond.includes('drizzle')) icon = 'cloud-rain';
+                    else if (cond.includes('thunderstorm')) icon = 'cloud-lightning';
+                    
+                    return `
+                        <div class="stat-item" style="justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i data-lucide="${icon}" style="color: var(--primary);"></i>
+                                <div>
+                                    <h4 style="margin:0; font-size: 0.95rem;">${dayName}</h4>
+                                    <span style="font-size: 0.8rem; color: var(--text-muted);">${day.condition}</span>
+                                </div>
+                            </div>
+                            <div style="font-weight: 600; font-size: 0.9rem;">
+                                ${Math.round(day.max_temp)}° <span style="color: var(--text-muted); font-weight: normal;">/ ${Math.round(day.min_temp)}°</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                lucide.createIcons();
             }
         } catch (e) {
             console.error(e);
