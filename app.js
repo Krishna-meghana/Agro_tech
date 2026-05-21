@@ -31,10 +31,6 @@ const translations = {
         select_soil: "Select Your Soil Type",
         get_recommendations: "Get Recommendations",
         ai_recommendations: "AI Recommendations:",
-        smart_irrigation: "Smart Irrigation Schedule",
-        irrigation_skip: "Skip watering (Natural rainfall expected)",
-        irrigation_heavy: "Heavy watering needed (Morning & Evening)",
-        irrigation_normal: "Standard watering (Morning)",
         expert_warning: "WARNING: This AI analysis has limitations. Please consult a local agricultural expert before applying heavy chemical treatments.",
         nav_settings: "Settings",
         settings_subtitle: "Configure your application preferences.",
@@ -77,10 +73,6 @@ const translations = {
         select_soil: "अपनी मिट्टी का प्रकार चुनें",
         get_recommendations: "सिफारिशें प्राप्त करें",
         ai_recommendations: "AI सिफारिशें:",
-        smart_irrigation: "स्मार्ट सिंचाई अनुसूची",
-        irrigation_skip: "सिंचाई छोड़ें (प्राकृतिक बारिश की उम्मीद)",
-        irrigation_heavy: "भारी सिंचाई की आवश्यकता (सुबह और शाम)",
-        irrigation_normal: "मानक सिंचाई (सुबह)",
         expert_warning: "चेतावनी: इस एआई विश्लेषण की सीमाएँ हैं। कृपया भारी रासायनिक उपचार लागू करने से पहले किसी स्थानीय कृषि विशेषज्ञ से सलाह लें।",
         nav_settings: "सेटिंग्स",
         settings_subtitle: "अपनी एप्लिकेशन प्राथमिकताएं कॉन्फ़िगर करें।",
@@ -123,10 +115,6 @@ const translations = {
         select_soil: "మీ నేల రకాన్ని ఎంచుకోండి",
         get_recommendations: "సిఫార్సులను పొందండి",
         ai_recommendations: "AI సిఫార్సులు:",
-        smart_irrigation: "స్మార్ట్ నీటిపారుదల షెడ్యూల్",
-        irrigation_skip: "నీరు త్రాగుట దాటవేయండి (వర్షం వస్తుందని భావిస్తున్నారు)",
-        irrigation_heavy: "భారీగా నీరు అవసరం (ఉదయం & సాయంత్రం)",
-        irrigation_normal: "ప్రామాణిక నీరు త్రాగుట (ఉదయం)",
         expert_warning: "హెచ్చరిక: ఈ AI విశ్లేషణకు పరిమితులు ఉన్నాయి. దయచేసి భారీ రసాయన చికిత్సలను వర్తించే ముందు స్థానిక వ్యవసాయ నిపుణుడిని సంప్రదించండి.",
         nav_settings: "సెట్టింగ్‌లు",
         settings_subtitle: "మీ అప్లికేషన్ ప్రాధాన్యతలను కాన్ఫిగర్ చేయండి.",
@@ -425,53 +413,8 @@ function fetchWeather() {
                         </div>
                     `;
                 }).join('');
+                lucide.createIcons();
             }
-            
-            // Render Irrigation Schedule
-            const irrigationContainer = document.getElementById('irrigation-container');
-            if (irrigationContainer && data.forecast && data.forecast.length > 0) {
-                const fullSchedule = [
-                    { dateStr: 'Today', condition: condition, max_temp: data.main.temp, isToday: true },
-                    ...data.forecast.slice(0, 3).map(day => {
-                        const dObj = new Date(day.date);
-                        return {
-                            dateStr: dObj.toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : (currentLang === 'te' ? 'te-IN' : 'en-US'), { weekday: 'short', month: 'short', day: 'numeric' }),
-                            condition: day.condition,
-                            max_temp: day.max_temp,
-                            isToday: false
-                        };
-                    })
-                ];
-
-                irrigationContainer.innerHTML = fullSchedule.map(day => {
-                    let actionKey = 'irrigation_normal';
-                    let icon = 'droplets';
-                    let color = 'var(--primary)';
-                    
-                    const cond = day.condition.toLowerCase();
-                    if (cond.includes('rain') || cond.includes('thunderstorm') || cond.includes('drizzle')) {
-                        actionKey = 'irrigation_skip';
-                        icon = 'cloud-rain';
-                        color = 'var(--text-muted)';
-                    } else if (cond.includes('clear') && day.max_temp > 35) {
-                        actionKey = 'irrigation_heavy';
-                        icon = 'sun-dim';
-                        color = 'var(--danger)';
-                    }
-
-                    return `
-                        <div class="stat-item" style="flex-direction: column; align-items: flex-start; padding: 1rem; border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); background: rgba(0,0,0,0.2);">
-                            <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 0.5rem;">
-                                <h4 style="margin:0; font-size: 1rem;">${day.isToday ? 'Today' : day.dateStr}</h4>
-                                <i data-lucide="${icon}" style="color: ${color};"></i>
-                            </div>
-                            <span style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">${Math.round(day.max_temp)}°C • ${day.condition}</span>
-                            <div style="font-weight: 500; font-size: 0.9rem; color: ${color};">${translations[currentLang][actionKey]}</div>
-                        </div>
-                    `;
-                }).join('');
-            }
-            lucide.createIcons();
         } catch (e) {
             console.error(e);
             document.getElementById('location-name').textContent = "API Error";
