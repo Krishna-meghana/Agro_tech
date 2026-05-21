@@ -102,7 +102,7 @@ async def login_user(req: AuthRequest):
     return {"message": "Login successful", "username": req.username}
 
 @app.post("/api/predict-disease")
-async def predict_disease(file: UploadFile = File(...)):
+async def predict_disease(file: UploadFile = File(...), language: str = Form("en")):
     """
     Simulated YOLO/CNN Vision API endpoint.
     If the simulated YOLO fails to recognize the image by filename,
@@ -139,7 +139,7 @@ async def predict_disease(file: UploadFile = File(...)):
                 }
             ]
             
-            prompt = "Analyze this crop leaf image. Briefly state the disease name and a 2 sentence treatment."
+            prompt = f"Analyze this crop leaf image. Briefly state the disease name and a 2 sentence treatment. Respond entirely in language (Code: '{language}'). If 'hi', use Hindi. If 'te', use Telugu."
             response = model.generate_content([prompt, image_parts[0]])
             treatment = response.text
             prediction = "AI Analyzed Disease"
@@ -155,7 +155,7 @@ async def predict_disease(file: UploadFile = File(...)):
     # If simulated YOLO succeeds, just ask Gemini for the treatment text
     elif model and prediction != "Unknown Disease":
         try:
-            resp = model.generate_content(f"Provide a brief, 2-sentence treatment recommendation for {prediction}.")
+            resp = model.generate_content(f"Provide a brief, 2-sentence treatment recommendation for {prediction}. Respond entirely in language (Code: '{language}'). If 'hi', use Hindi. If 'te', use Telugu.")
             treatment = resp.text
         except Exception as e:
             pass
@@ -268,7 +268,7 @@ async def chat_assistant(req: ChatRequest):
     You are an expert agronomist.
     Answer the user's question primarily based on the following Knowledge Base context.
     If the answer isn't in the context, use your general knowledge but keep it strictly agriculture-related.
-    Respond entirely in language code: '{req.language}'. Keep it concise (under 100 words) and format in Markdown.
+    Respond entirely in language (Code: '{req.language}'). If 'hi', use Hindi. If 'te', use Telugu. Keep it concise (under 100 words) and format in Markdown.
     
     KNOWLEDGE BASE:
     {KNOWLEDGE_BASE}
@@ -300,7 +300,7 @@ async def recommend_crops(req: SoilRequest):
     The user has {req.soil_type} soil. 
     Recommend 3-5 optimal crops for this soil type. 
     Format the response in Markdown with bullet points. Provide a very brief 1-sentence growing tip for each crop.
-    Respond entirely in language code: '{req.language}'.
+    Respond entirely in language (Code: '{req.language}'). If 'hi', use Hindi. If 'te', use Telugu.
     """
     
     try:
@@ -331,7 +331,7 @@ async def recommend_fertilizer(req: FertilizerRequest):
     Recommend the optimal NPK (Nitrogen-Phosphorus-Potassium) ratio for this crop.
     Also provide a brief, actionable fertilizer application timing schedule (e.g., at sowing, vegetative stage).
     Format the response in Markdown with bullet points.
-    Respond entirely in language code: '{req.language}'.
+    Respond entirely in language (Code: '{req.language}'). If 'hi', use Hindi. If 'te', use Telugu.
     """
     
     try:

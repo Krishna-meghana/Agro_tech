@@ -520,15 +520,16 @@ async function analyzeImage() {
     btn.textContent = "Analyzing...";
     btn.disabled = true;
 
-    document.getElementById('drop-zone').classList.remove('hidden');
-    document.getElementById('image-preview').classList.add('hidden');
+    document.getElementById('drop-zone').classList.add('hidden');
+    document.getElementById('image-preview').classList.remove('hidden');
     
     addChatMessage("user", `[Uploaded Image: ${uploadedImageName}] Please analyze this crop leaf.`);
 
-    const formData = new FormData();
-    formData.append("file", uploadedFileObj);
-
     try {
+        const formData = new FormData();
+        formData.append("file", uploadedFileObj);
+        formData.append("language", currentLang);
+
         const response = await fetch(`${API_BASE}/api/predict-disease`, {
             method: "POST",
             body: formData
