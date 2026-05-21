@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import requests
+import sqlite3
+import hashlib
+import tempfile
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -20,6 +23,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+DB_PATH = os.path.join(tempfile.gettempdir(), "users.db")
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users
+                 (username TEXT PRIMARY KEY, password TEXT)''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+def hash_password(password: str, salt: bytes = None):
+    if salt is None:
+        salt = os.urandom(16)
+    pw_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+    return salt.hex() + ":" + pw_hash.hex()
+
+def verify_password(password: str, hashed_str: str):
+    try:
+        salt_hex, hash_hex = hashed_str.split(':')
+        salt = bytes.fromhex(salt_hex)
+        return hash_password(password, salt) == hashed_str
+    except Exception:
+        return False
+
 model = None
 if GEMINI_API_KEY and GEMINI_API_KEY != "your_gemini_api_key_here":
     genai.configure(api_key=GEMINI_API_KEY)
@@ -34,6 +63,43 @@ def load_knowledge_base():
         return "No local knowledge base available."
 
 KNOWLEDGE_BASE = load_knowledge_base()
+
+from fastapi import HTTPException
+
+class AuthRequest(BaseModel):
+    username: str
+    password: str
+
+@app.post("/api/register")
+async def register_user(req: AuthRequest):
+    if not req.username or not req.password:
+        raise HTTPException(status_code=400, detail="Username and password required")
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT username FROM users WHERE username=?", (req.username,))
+    if c.fetchone():
+        conn.close()
+        raise HTTPException(status_code=400, detail="Username already exists")
+        
+    hashed_pw = hash_password(req.password)
+    c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (req.username, hashed_pw))
+    conn.commit()
+    conn.close()
+    return {"message": "User created successfully"}
+
+@app.post("/api/login")
+async def login_user(req: AuthRequest):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT password FROM users WHERE username=?", (req.username,))
+    row = c.fetchone()
+    conn.close()
+    
+    if not row or not verify_password(req.password, row[0]):
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+        
+    return {"message": "Login successful", "username": req.username}
 
 @app.post("/api/predict-disease")
 async def predict_disease(file: UploadFile = File(...)):

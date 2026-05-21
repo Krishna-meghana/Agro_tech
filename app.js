@@ -132,16 +132,60 @@ function checkAuthStatus() {
     }
 }
 
-document.getElementById('login-form').addEventListener('submit', (e) => {
+document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('username').value;
-    if (username.length > 2) {
+    const password = document.getElementById('password').value;
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        
+        if (!res.ok) {
+            const err = await res.json();
+            alert("Login Failed: " + (err.detail || "Invalid credentials"));
+            return;
+        }
+        
         localStorage.setItem('agroUser', username);
         document.getElementById('user-display-name').textContent = username;
         showPage('app-layout');
         loadSettings();
         loadHistory();
         fetchWeather();
+    } catch (e) {
+        alert("Error connecting to server.");
+    }
+});
+
+document.getElementById('register-btn').addEventListener('click', async () => {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    if (!username || !password) {
+        alert("Please enter both username and password to register.");
+        return;
+    }
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        
+        if (!res.ok) {
+            const err = await res.json();
+            alert("Registration Failed: " + (err.detail || "Error"));
+            return;
+        }
+        
+        alert("Registration successful! You can now click Sign In.");
+    } catch (e) {
+        alert("Error connecting to server.");
     }
 });
 
