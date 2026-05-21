@@ -69,6 +69,10 @@
                     <i data-lucide="stethoscope"></i>
                     <span data-i18n="nav_advisory">Crop Advisory</span>
                 </li>
+                <li data-page="soil">
+                    <i data-lucide="sprout"></i>
+                    <span data-i18n="nav_soil">Soil Planner</span>
+                </li>
                 <li data-page="history">
                     <i data-lucide="history"></i>
                     <span data-i18n="nav_history">History</span>
@@ -176,6 +180,36 @@
                         <div class="chat-input">
                             <input type="text" id="chat-input-field" placeholder="Describe symptoms..." data-i18n-placeholder="chat_placeholder">
                             <button id="send-btn" class="btn-primary icon-btn"><i data-lucide="send"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Soil Planner Page -->
+            <div id="page-soil" class="content-section">
+                <header>
+                    <h1 data-i18n="soil_planner_title">Soil & Crop Planner</h1>
+                    <p data-i18n="soil_planner_subtitle">Get AI crop recommendations based on your soil type.</p>
+                </header>
+
+                <div class="glass-card" style="padding: 2rem;">
+                    <h3 data-i18n="select_soil">Select Your Soil Type</h3>
+                    <div class="input-group" style="max-width: 400px; margin-top: 1rem;">
+                        <select id="soil-type-select" style="width: 100%; padding: 0.8rem; border-radius: var(--radius); background: rgba(255, 255, 255, 0.1); color: var(--text); border: 1px solid rgba(255, 255, 255, 0.2); outline: none;">
+                            <option value="Loamy" style="color: black;">Loamy (Balanced)</option>
+                            <option value="Clay" style="color: black;">Clay (Heavy, holds water)</option>
+                            <option value="Sandy" style="color: black;">Sandy (Light, drains fast)</option>
+                            <option value="Silt" style="color: black;">Silt (Fertile, moisture retentive)</option>
+                            <option value="Peaty" style="color: black;">Peaty (Acidic, rich in organics)</option>
+                            <option value="Chalky" style="color: black;">Chalky (Alkaline, stony)</option>
+                        </select>
+                    </div>
+                    
+                    <button id="get-soil-recs-btn" class="btn-primary" style="margin-top: 1rem;" data-i18n="get_recommendations">Get Recommendations</button>
+
+                    <div id="soil-results" style="margin-top: 2rem; display: none;">
+                        <h3 data-i18n="ai_recommendations">AI Recommendations:</h3>
+                        <div id="soil-results-content" style="margin-top: 1rem; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: var(--radius); line-height: 1.6;">
                         </div>
                     </div>
                 </div>

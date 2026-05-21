@@ -282,3 +282,32 @@ async def chat_assistant(req: ChatRequest):
         }
     except Exception as e:
         return {"response": f"AI Error: {str(e)}", "warning": True}
+
+class SoilRequest(BaseModel):
+    soil_type: str
+    language: str = "en"
+
+@app.post("/api/recommend-crops")
+async def recommend_crops(req: SoilRequest):
+    """
+    AI-driven crop recommendations based on soil type.
+    """
+    if not model:
+        return {"response": "Error: Gemini API key not configured.", "warning": True}
+        
+    system_prompt = f"""
+    You are an expert agronomist. 
+    The user has {req.soil_type} soil. 
+    Recommend 3-5 optimal crops for this soil type. 
+    Format the response in Markdown with bullet points. Provide a very brief 1-sentence growing tip for each crop.
+    Respond entirely in language code: '{req.language}'.
+    """
+    
+    try:
+        response = model.generate_content(system_prompt)
+        return {
+            "response": response.text,
+            "warning": False
+        }
+    except Exception as e:
+        return {"response": f"AI Error: {str(e)}", "warning": True}

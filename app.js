@@ -7,6 +7,7 @@ const translations = {
         login_btn: "Sign In",
         nav_dashboard: "Dashboard",
         nav_advisory: "Crop Advisory",
+        nav_soil: "Soil Planner",
         nav_history: "History",
         logout: "Logout",
         welcome: "Welcome back",
@@ -25,6 +26,11 @@ const translations = {
         ai_greeting: "Hello! Please upload a clear image of the crop leaf, or describe the symptoms you are seeing.",
         chat_placeholder: "Describe symptoms...",
         history_subtitle: "Your past analyses and recommendations.",
+        soil_planner_title: "Soil & Crop Planner",
+        soil_planner_subtitle: "Get AI crop recommendations based on your soil type.",
+        select_soil: "Select Your Soil Type",
+        get_recommendations: "Get Recommendations",
+        ai_recommendations: "AI Recommendations:",
         expert_warning: "WARNING: This AI analysis has limitations. Please consult a local agricultural expert before applying heavy chemical treatments.",
         nav_settings: "Settings",
         settings_subtitle: "Configure your application preferences.",
@@ -43,6 +49,7 @@ const translations = {
         login_btn: "साइन इन करें",
         nav_dashboard: "डैशबोर्ड",
         nav_advisory: "फसल सलाह",
+        nav_soil: "मृदा योजनाकार",
         nav_history: "इतिहास",
         logout: "लॉग आउट",
         welcome: "वापसी पर स्वागत है",
@@ -61,6 +68,11 @@ const translations = {
         ai_greeting: "नमस्ते! कृपया फसल की पत्ती की स्पष्ट छवि अपलोड करें, या आप जो लक्षण देख रहे हैं उनका वर्णन करें।",
         chat_placeholder: "लक्षणों का वर्णन करें...",
         history_subtitle: "आपके पिछले विश्लेषण और सिफारिशें।",
+        soil_planner_title: "मृदा और फसल योजनाकार",
+        soil_planner_subtitle: "अपनी मिट्टी के प्रकार के आधार पर AI फसल की सिफारिशें प्राप्त करें।",
+        select_soil: "अपनी मिट्टी का प्रकार चुनें",
+        get_recommendations: "सिफारिशें प्राप्त करें",
+        ai_recommendations: "AI सिफारिशें:",
         expert_warning: "चेतावनी: इस एआई विश्लेषण की सीमाएँ हैं। कृपया भारी रासायनिक उपचार लागू करने से पहले किसी स्थानीय कृषि विशेषज्ञ से सलाह लें।",
         nav_settings: "सेटिंग्स",
         settings_subtitle: "अपनी एप्लिकेशन प्राथमिकताएं कॉन्फ़िगर करें।",
@@ -79,6 +91,7 @@ const translations = {
         login_btn: "సైన్ ఇన్ చేయండి",
         nav_dashboard: "డాష్‌బోర్డ్",
         nav_advisory: "పంట సలహా",
+        nav_soil: "నేల ప్లానర్",
         nav_history: "చరిత్ర",
         logout: "లాగ్అవుట్",
         welcome: "స్వాగతం",
@@ -97,6 +110,11 @@ const translations = {
         ai_greeting: "నమస్కారం! దయచేసి పంట ఆకు యొక్క స్పష్టమైన చిత్రాన్ని అప్‌లోడ్ చేయండి లేదా మీరు చూస్తున్న లక్షణాలను వివరించండి.",
         chat_placeholder: "లక్షణాలను వివరించండి...",
         history_subtitle: "మీ గత విశ్లేషణలు మరియు సిఫార్సులు.",
+        soil_planner_title: "నేల & పంట ప్లానర్",
+        soil_planner_subtitle: "మీ నేల రకం ఆధారంగా AI పంట సిఫార్సులను పొందండి.",
+        select_soil: "మీ నేల రకాన్ని ఎంచుకోండి",
+        get_recommendations: "సిఫార్సులను పొందండి",
+        ai_recommendations: "AI సిఫార్సులు:",
         expert_warning: "హెచ్చరిక: ఈ AI విశ్లేషణకు పరిమితులు ఉన్నాయి. దయచేసి భారీ రసాయన చికిత్సలను వర్తించే ముందు స్థానిక వ్యవసాయ నిపుణుడిని సంప్రదించండి.",
         nav_settings: "సెట్టింగ్‌లు",
         settings_subtitle: "మీ అప్లికేషన్ ప్రాధాన్యతలను కాన్ఫిగర్ చేయండి.",
@@ -252,6 +270,42 @@ function setupEventListeners() {
         
         fetchWeather();
     });
+
+    // Soil Planner
+    const getSoilBtn = document.getElementById('get-soil-recs-btn');
+    if (getSoilBtn) {
+        getSoilBtn.addEventListener('click', async () => {
+            const soilType = document.getElementById('soil-type-select').value;
+            const btn = document.getElementById('get-soil-recs-btn');
+            const resultsDiv = document.getElementById('soil-results');
+            const contentDiv = document.getElementById('soil-results-content');
+            
+            btn.disabled = true;
+            btn.textContent = "Analyzing...";
+            resultsDiv.style.display = 'block';
+            contentDiv.innerHTML = `<div style="text-align: center; color: var(--text-muted);">Fetching AI recommendations...</div>`;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/recommend-crops`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ soil_type: soilType, language: currentLang })
+                });
+                
+                if (!response.ok) throw new Error("Failed to connect to backend API");
+                const data = await response.json();
+                
+                contentDiv.innerHTML = marked.parse ? marked.parse(data.response) : data.response.replace(/\n/g, '<br>');
+                
+                saveHistoryItem(`Soil Analysis: ${soilType}`, "AI Planner", `Got crop recommendations for ${soilType} soil.`);
+            } catch (error) {
+                contentDiv.innerHTML = `<div style="color: var(--danger);">Error: ${error.message}</div>`;
+            }
+            
+            btn.disabled = false;
+            btn.textContent = translations[currentLang].get_recommendations;
+        });
+    }
 }
 
 function loadSettings() {
