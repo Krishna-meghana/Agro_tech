@@ -50,9 +50,19 @@ def verify_password(password: str, hashed_str: str):
         return False
 
 model = None
+model_fallback = None
 if GEMINI_API_KEY and GEMINI_API_KEY != "your_gemini_api_key_here":
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel('gemini-2.5-flash')
+    model_fallback = genai.GenerativeModel('gemini-2.0-flash-lite')
+
+def generate_content_with_fallback(contents):
+    try:
+        return model.generate_content(contents)
+    except Exception as e:
+        if "429" in str(e) and model_fallback:
+            return model_fallback.generate_content(contents)
+        raise e
 
 def load_knowledge_base():
     try:
@@ -140,7 +150,7 @@ async def predict_disease(file: UploadFile = File(...), language: str = Form("en
             ]
             
             prompt = f"Analyze this crop leaf image. Briefly state the disease name and a 2 sentence treatment. Respond entirely in language (Code: '{language}'). If 'hi', use Hindi. If 'te', use Telugu."
-            response = model.generate_content([prompt, image_parts[0]])
+            response = generate_content_with_fallback([prompt, image_parts[0]])
             treatment = response.text
             prediction = "AI Analyzed Disease"
             confidence = 0.90
@@ -155,7 +165,7 @@ async def predict_disease(file: UploadFile = File(...), language: str = Form("en
     # If simulated YOLO succeeds, just ask Gemini for the treatment text
     elif model and prediction != "Unknown Disease":
         try:
-            resp = model.generate_content(f"Provide a brief, 2-sentence treatment recommendation for {prediction}. Respond entirely in language (Code: '{language}'). If 'hi', use Hindi. If 'te', use Telugu.")
+            resp = generate_content_with_fallback(f"Provide a brief, 2-sentence treatment recommendation for {prediction}. Respond entirely in language (Code: '{language}'). If 'hi', use Hindi. If 'te', use Telugu.")
             treatment = resp.text
         except Exception as e:
             pass
@@ -275,7 +285,7 @@ async def chat_assistant(req: ChatRequest):
     """
     
     try:
-        response = model.generate_content(f"{system_prompt}\n\nUser: {req.message}")
+        response = generate_content_with_fallback(f"{system_prompt}\n\nUser: {req.message}")
         return {
             "response": response.text,
             "warning": False
@@ -304,7 +314,7 @@ async def recommend_crops(req: SoilRequest):
     """
     
     try:
-        response = model.generate_content(system_prompt)
+        response = generate_content_with_fallback(system_prompt)
         return {
             "response": response.text,
             "warning": False
@@ -335,7 +345,7 @@ async def recommend_fertilizer(req: FertilizerRequest):
     """
     
     try:
-        response = model.generate_content(system_prompt)
+        response = generate_content_with_fallback(system_prompt)
         return {
             "response": response.text,
             "warning": False
@@ -365,7 +375,7 @@ async def translate_text(req: TranslateRequest):
     """
     
     try:
-        response = model.generate_content(system_prompt)
+        response = generate_content_with_fallback(system_prompt)
         return {
             "response": response.text,
             "warning": False
