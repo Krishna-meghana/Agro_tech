@@ -342,3 +342,33 @@ async def recommend_fertilizer(req: FertilizerRequest):
         }
     except Exception as e:
         return {"response": f"AI Error: {str(e)}", "warning": True}
+
+class TranslateRequest(BaseModel):
+    text: str
+    target_language: str
+
+@app.post("/api/translate")
+async def translate_text(req: TranslateRequest):
+    """
+    Translates arbitrary text into the requested language while preserving Markdown/HTML.
+    """
+    if not model:
+        return {"response": req.text, "warning": True}
+        
+    system_prompt = f"""
+    Translate the following text into language (Code: '{req.target_language}'). If 'hi', translate to Hindi. If 'te', translate to Telugu. If 'en', translate to English.
+    If the text contains Markdown formatting (like **bold**, bullet points) or HTML tags, preserve all formatting perfectly in your translation.
+    Return ONLY the translated text. Do not add any introductory or concluding remarks.
+    
+    TEXT TO TRANSLATE:
+    {req.text}
+    """
+    
+    try:
+        response = model.generate_content(system_prompt)
+        return {
+            "response": response.text,
+            "warning": False
+        }
+    except Exception as e:
+        return {"response": req.text, "warning": True}

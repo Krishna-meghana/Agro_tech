@@ -313,9 +313,9 @@ function setupEventListeners() {
                 if (!response.ok) throw new Error("Failed to connect to backend API");
                 const data = await response.json();
                 
-                contentDiv.innerHTML = marked.parse ? marked.parse(data.response) : data.response.replace(/\n/g, '<br>');
+                contentDiv.innerHTML = `<div class="ai-translatable">${marked.parse ? marked.parse(data.response) : data.response.replace(/\n/g, '<br>')}</div>`;
                 
-                saveHistoryItem(`Soil Analysis: ${soilType}`, "AI Planner", `Got crop recommendations for ${soilType} soil.`);
+                saveHistoryItem(`Soil: ${soilType}`, "AI Planner", `Got crop recommendations for ${soilType} soil.`);
             } catch (error) {
                 contentDiv.innerHTML = `<div style="color: var(--danger);">Error: ${error.message}</div>`;
             }
@@ -355,7 +355,7 @@ function setupEventListeners() {
                 if (!response.ok) throw new Error("Failed to connect to backend API");
                 const data = await response.json();
                 
-                contentDiv.innerHTML = marked.parse ? marked.parse(data.response) : data.response.replace(/\n/g, '<br>');
+                contentDiv.innerHTML = `<div class="ai-translatable">${marked.parse ? marked.parse(data.response) : data.response.replace(/\n/g, '<br>')}</div>`;
                 
                 saveHistoryItem(`Fertilizer: ${cropName}`, "AI Planner", `Got NPK and timing schedule for ${cropName} in ${soilType} soil.`);
             } catch (error) {
@@ -410,6 +410,32 @@ function updateLanguage() {
             el.placeholder = dict[key];
         }
     });
+
+    const aiElements = document.querySelectorAll('.ai-translatable');
+    if (aiElements.length > 0) {
+        Array.from(aiElements).forEach(async (el) => {
+            const originalHTML = el.innerHTML;
+            if (!originalHTML.trim()) return;
+            
+            try {
+                el.style.opacity = '0.5';
+                const response = await fetch(`${API_BASE}/api/translate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: originalHTML, target_language: currentLang })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    el.innerHTML = data.response;
+                }
+            } catch (e) {
+                console.error("Translation failed", e);
+            } finally {
+                el.style.opacity = '1';
+            }
+        });
+    }
 }
 
 // --- Live Weather (Backend Wrapper) ---
@@ -582,13 +608,13 @@ function addChatMessage(sender, text, includeWarning = false) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${sender}`;
     
-    let contentHtml = `<div class="message-content">${marked.parse ? marked.parse(text) : text.replace(/\n/g, '<br>')}</div>`;
+    let contentHtml = `<div class="message-content ${sender === 'ai' ? 'ai-translatable' : ''}">${marked.parse ? marked.parse(text) : text.replace(/\n/g, '<br>')}</div>`;
     
     if (sender === 'ai' && includeWarning) {
         const warningTxt = translations[currentLang].expert_warning;
         contentHtml = `<div class="message-content">
-            ${marked.parse ? marked.parse(text) : text.replace(/\n/g, '<br>')}
-            <div class="expert-warning"><i data-lucide="alert-octagon" class="icon-sm" style="display:inline; margin-bottom:-2px;"></i> ${warningTxt}</div>
+            <div class="ai-translatable">${marked.parse ? marked.parse(text) : text.replace(/\n/g, '<br>')}</div>
+            <div class="expert-warning"><i data-lucide="alert-octagon" class="icon-sm" style="display:inline; margin-bottom:-2px;"></i> <span data-i18n="expert_warning">${warningTxt}</span></div>
         </div>`;
     }
     
