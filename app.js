@@ -8,6 +8,7 @@ const translations = {
         nav_dashboard: "Dashboard",
         nav_advisory: "Crop Advisory",
         nav_soil: "Soil Planner",
+        nav_fertilizer: "Fertilizer Guide",
         nav_history: "History",
         logout: "Logout",
         welcome: "Welcome back",
@@ -31,6 +32,11 @@ const translations = {
         select_soil: "Select Your Soil Type",
         get_recommendations: "Get Recommendations",
         ai_recommendations: "AI Recommendations:",
+        fertilizer_title: "Fertilizer Guide",
+        fertilizer_subtitle: "Get optimal NPK ratios and application timing for your crops.",
+        crop_and_soil: "Crop & Soil Details",
+        crop_name_placeholder: "Enter crop name (e.g., Wheat)",
+        get_fertilizer_plan: "Get Fertilizer Plan",
         expert_warning: "WARNING: This AI analysis has limitations. Please consult a local agricultural expert before applying heavy chemical treatments.",
         nav_settings: "Settings",
         settings_subtitle: "Configure your application preferences.",
@@ -50,6 +56,7 @@ const translations = {
         nav_dashboard: "डैशबोर्ड",
         nav_advisory: "फसल सलाह",
         nav_soil: "मृदा योजनाकार",
+        nav_fertilizer: "उर्वरक गाइड",
         nav_history: "इतिहास",
         logout: "लॉग आउट",
         welcome: "वापसी पर स्वागत है",
@@ -73,6 +80,11 @@ const translations = {
         select_soil: "अपनी मिट्टी का प्रकार चुनें",
         get_recommendations: "सिफारिशें प्राप्त करें",
         ai_recommendations: "AI सिफारिशें:",
+        fertilizer_title: "उर्वरक गाइड",
+        fertilizer_subtitle: "अपनी फसलों के लिए इष्टतम एनपीके अनुपात और आवेदन का समय प्राप्त करें।",
+        crop_and_soil: "फसल और मिट्टी का विवरण",
+        crop_name_placeholder: "फसल का नाम दर्ज करें (उदा., गेहूं)",
+        get_fertilizer_plan: "उर्वरक योजना प्राप्त करें",
         expert_warning: "चेतावनी: इस एआई विश्लेषण की सीमाएँ हैं। कृपया भारी रासायनिक उपचार लागू करने से पहले किसी स्थानीय कृषि विशेषज्ञ से सलाह लें।",
         nav_settings: "सेटिंग्स",
         settings_subtitle: "अपनी एप्लिकेशन प्राथमिकताएं कॉन्फ़िगर करें।",
@@ -92,6 +104,7 @@ const translations = {
         nav_dashboard: "డాష్‌బోర్డ్",
         nav_advisory: "పంట సలహా",
         nav_soil: "నేల ప్లానర్",
+        nav_fertilizer: "ఎరువుల గైడ్",
         nav_history: "చరిత్ర",
         logout: "లాగ్అవుట్",
         welcome: "స్వాగతం",
@@ -115,6 +128,11 @@ const translations = {
         select_soil: "మీ నేల రకాన్ని ఎంచుకోండి",
         get_recommendations: "సిఫార్సులను పొందండి",
         ai_recommendations: "AI సిఫార్సులు:",
+        fertilizer_title: "ఎరువుల గైడ్",
+        fertilizer_subtitle: "మీ పంటలకు సరైన NPK నిష్పత్తులు మరియు దరఖాస్తు సమయాన్ని పొందండి.",
+        crop_and_soil: "పంట & నేల వివరాలు",
+        crop_name_placeholder: "పంట పేరును నమోదు చేయండి (ఉదా., గోధుమ)",
+        get_fertilizer_plan: "ఎరువుల ప్రణాళికను పొందండి",
         expert_warning: "హెచ్చరిక: ఈ AI విశ్లేషణకు పరిమితులు ఉన్నాయి. దయచేసి భారీ రసాయన చికిత్సలను వర్తించే ముందు స్థానిక వ్యవసాయ నిపుణుడిని సంప్రదించండి.",
         nav_settings: "సెట్టింగ్‌లు",
         settings_subtitle: "మీ అప్లికేషన్ ప్రాధాన్యతలను కాన్ఫిగర్ చేయండి.",
@@ -304,6 +322,48 @@ function setupEventListeners() {
             
             btn.disabled = false;
             btn.textContent = translations[currentLang].get_recommendations;
+        });
+    }
+
+    // Fertilizer Guide
+    const getFertBtn = document.getElementById('get-fertilizer-btn');
+    if (getFertBtn) {
+        getFertBtn.addEventListener('click', async () => {
+            const cropName = document.getElementById('fert-crop-name').value.trim();
+            const soilType = document.getElementById('fert-soil-select').value;
+            const btn = document.getElementById('get-fertilizer-btn');
+            const resultsDiv = document.getElementById('fertilizer-results');
+            const contentDiv = document.getElementById('fertilizer-results-content');
+            
+            if (!cropName) {
+                alert("Please enter a crop name.");
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = "Analyzing...";
+            resultsDiv.style.display = 'block';
+            contentDiv.innerHTML = `<div style="text-align: center; color: var(--text-muted);">Fetching AI fertilizer plan...</div>`;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/recommend-fertilizer`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ crop_name: cropName, soil_type: soilType, language: currentLang })
+                });
+                
+                if (!response.ok) throw new Error("Failed to connect to backend API");
+                const data = await response.json();
+                
+                contentDiv.innerHTML = marked.parse ? marked.parse(data.response) : data.response.replace(/\n/g, '<br>');
+                
+                saveHistoryItem(`Fertilizer: ${cropName}`, "AI Planner", `Got NPK and timing schedule for ${cropName} in ${soilType} soil.`);
+            } catch (error) {
+                contentDiv.innerHTML = `<div style="color: var(--danger);">Error: ${error.message}</div>`;
+            }
+            
+            btn.disabled = false;
+            btn.textContent = translations[currentLang].get_fertilizer_plan;
         });
     }
 }

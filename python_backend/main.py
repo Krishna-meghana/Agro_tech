@@ -311,3 +311,34 @@ async def recommend_crops(req: SoilRequest):
         }
     except Exception as e:
         return {"response": f"AI Error: {str(e)}", "warning": True}
+
+class FertilizerRequest(BaseModel):
+    crop_name: str
+    soil_type: str
+    language: str = "en"
+
+@app.post("/api/recommend-fertilizer")
+async def recommend_fertilizer(req: FertilizerRequest):
+    """
+    AI-driven fertilizer recommendations based on crop and soil type.
+    """
+    if not model:
+        return {"response": "Error: Gemini API key not configured.", "warning": True}
+        
+    system_prompt = f"""
+    You are an expert agronomist and soil scientist. 
+    The user is growing {req.crop_name} in {req.soil_type} soil. 
+    Recommend the optimal NPK (Nitrogen-Phosphorus-Potassium) ratio for this crop.
+    Also provide a brief, actionable fertilizer application timing schedule (e.g., at sowing, vegetative stage).
+    Format the response in Markdown with bullet points.
+    Respond entirely in language code: '{req.language}'.
+    """
+    
+    try:
+        response = model.generate_content(system_prompt)
+        return {
+            "response": response.text,
+            "warning": False
+        }
+    except Exception as e:
+        return {"response": f"AI Error: {str(e)}", "warning": True}

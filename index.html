@@ -73,6 +73,10 @@
                     <i data-lucide="sprout"></i>
                     <span data-i18n="nav_soil">Soil Planner</span>
                 </li>
+                <li data-page="fertilizer">
+                    <i data-lucide="flask-conical"></i>
+                    <span data-i18n="nav_fertilizer">Fertilizer Guide</span>
+                </li>
                 <li data-page="history">
                     <i data-lucide="history"></i>
                     <span data-i18n="nav_history">History</span>
@@ -210,6 +214,41 @@
                     <div id="soil-results" style="margin-top: 2rem; display: none;">
                         <h3 data-i18n="ai_recommendations">AI Recommendations:</h3>
                         <div id="soil-results-content" style="margin-top: 1rem; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: var(--radius); line-height: 1.6;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fertilizer Guide Page -->
+            <div id="page-fertilizer" class="content-section">
+                <header>
+                    <h1 data-i18n="fertilizer_title">Fertilizer Guide</h1>
+                    <p data-i18n="fertilizer_subtitle">Get optimal NPK ratios and application timing for your crops.</p>
+                </header>
+
+                <div class="glass-card" style="padding: 2rem;">
+                    <h3 data-i18n="crop_and_soil">Crop & Soil Details</h3>
+                    <div class="input-group" style="max-width: 400px; margin-top: 1rem;">
+                        <i data-lucide="leaf"></i>
+                        <input type="text" id="fert-crop-name" placeholder="Enter crop name (e.g., Wheat)" data-i18n-placeholder="crop_name_placeholder">
+                    </div>
+                    
+                    <div class="input-group" style="max-width: 400px; margin-top: 1rem;">
+                        <select id="fert-soil-select" style="width: 100%; padding: 0.8rem; border-radius: var(--radius); background: rgba(255, 255, 255, 0.1); color: var(--text); border: 1px solid rgba(255, 255, 255, 0.2); outline: none;">
+                            <option value="Loamy" style="color: black;">Loamy (Balanced)</option>
+                            <option value="Clay" style="color: black;">Clay (Heavy, holds water)</option>
+                            <option value="Sandy" style="color: black;">Sandy (Light, drains fast)</option>
+                            <option value="Silt" style="color: black;">Silt (Fertile, moisture retentive)</option>
+                            <option value="Peaty" style="color: black;">Peaty (Acidic, rich in organics)</option>
+                            <option value="Chalky" style="color: black;">Chalky (Alkaline, stony)</option>
+                        </select>
+                    </div>
+                    
+                    <button id="get-fertilizer-btn" class="btn-primary" style="margin-top: 1rem;" data-i18n="get_fertilizer_plan">Get Fertilizer Plan</button>
+
+                    <div id="fertilizer-results" style="margin-top: 2rem; display: none;">
+                        <h3 data-i18n="ai_recommendations">AI Recommendations:</h3>
+                        <div id="fertilizer-results-content" style="margin-top: 1rem; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: var(--radius); line-height: 1.6;">
                         </div>
                     </div>
                 </div>
